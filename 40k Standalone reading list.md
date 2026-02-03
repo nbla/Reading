@@ -160,7 +160,7 @@ All titles are selected for high quality, independence, and strong reputation.
 
 ---
 
-## 🕯️ Angels of Darkness
+## 🕯️ Angels of Darkness ⭐⭐⭐⭐
 **Author:** Gav Thorpe  
 **Focus:** Dark Angels, guilt  
 **Tone:** Internal conflict, mystery  
@@ -168,7 +168,7 @@ All titles are selected for high quality, independence, and strong reputation.
 
 ---
 
-## 🛡️ The Devastation of Baal
+## 🛡️ The Devastation of Baal ⭐⭐⭐⭐½
 **Author:** Guy Haley  
 **Focus:** Blood Angels, Tyranids  
 **Tone:** Epic but emotional  
