@@ -8,7 +8,7 @@
 
 ## 🛩️ X-Wing / Thrawn Era (6–12 ABY)
 1. **Rogue Squadron** *(Michael Stackpole)* :heavy_check_mark:
-2. **Wedge’s Gamble**   :heavy_check_mark:
+2. **Wedge’s Gamble**   
 3. **The Krytos Trap**
 4. **The Bacta War**
 5. **The Courtship of Princess Leia** *(Dave Wolverton, 8 ABY)*
