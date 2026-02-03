@@ -1,7 +1,7 @@
 # 🌌 Star Wars Legends – From Shadows of the Empire to Mercy Kill
 
 ## ✴️ Pre–X-Wing Era (3–5 ABY)
-1. **Shadows of the Empire** – Set between *The Empire Strikes Back* and *Return of the Jedi*.
+1. **Shadows of the Empire** - :blue_book: – Set between *The Empire Strikes Back* and *Return of the Jedi*.
 2. **The Truce at Bakura** – Immediately after Endor; the beginning of the New Republic.
 
 ---
