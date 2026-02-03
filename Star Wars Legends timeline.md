@@ -7,7 +7,7 @@
 ---
 
 ## 🛩️ X-Wing / Thrawn Era (6–12 ABY)
-1. **Rogue Squadron** *(Michael Stackpole)*
+1. **Rogue Squadron** *(Michael Stackpole)* - [x]
 2. **Wedge’s Gamble**
 3. **The Krytos Trap**
 4. **The Bacta War**
