@@ -8,10 +8,10 @@ Checkmark = Done reading
 [Star Wars Legends timeline](https://github.com/nbla/Reading/blob/main/Star%20Wars%20Legends%20timeline.md)
 
 **Currently reading**  
-The Way of Kings  
-Shadows of the Empire  
-The Devastation of Baal  
-The Final Day  
+The Way of Kings - Brandon Sanderson  
+Shadows of the Empire - Steve Perry  
+The Devastation of Baal - Guy Haley  
+The Final Day - William R. Forstchen  
 
 **Finished books 2025**  
 2025-04-01The Buried Dagger - James Swallow  
@@ -33,9 +33,9 @@ The Final Day
 2025-12-16 The End and the Death: Part I - Dan Abnett  
 
 **Finished books 2026**  
-2026-01-15 The End and the Death: Volume II  
-2026-01-20 The End and the Death: Volume III  
-2026-01-26 Era of Ruin  
-2026-01-28 One Year After  
+2026-01-15 The End and the Death: Volume II - Dan Abnett  
+2026-01-20 The End and the Death: Volume III - Dan Abnett  
+2026-01-26 Era of Ruin - Dan Abnett  
+2026-01-28 One Year After - William R. Forstchen  
 
 
