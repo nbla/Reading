@@ -4,6 +4,9 @@ Various lists of books I'm reading or want to read. Finished books list can look
 Blue book = Currently reading  
 Checkmark = Done reading
 
+https://github.com/nbla/Reading/blob/main/40k%20Standalone%20reading%20list.md
+https://github.com/nbla/Reading/blob/main/Star%20Wars%20Legends%20timeline.md
+
 **Currently reading**  
 The Way of Kings  
 Shadows of the Empire  
