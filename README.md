@@ -1,21 +1,16 @@
 # Reading
-Various lists of books I'm reading or want to read
+Various lists of books I'm reading or want to read. Finished books list can look wonky but with the dates but I'm reading 3-4 books at the same time.
 
 Blue book = Currently reading  
 Checkmark = Done reading
 
+**Currently reading**
 The Way of Kings  
 Shadows of the Empire  
 The Devastation of Baal  
 The Final Day  
 
-Finished books 2026  
-2026-01-15 The End and the Death: Volume II  
-2026-01-20 The End and the Death: Volume III  
-2026-01-26 Era of Ruin  
-2026-01-28 One Year After  
-
-Finished books 2025  
+**Finished books 2025**  
 2025-04-01The Buried Dagger - James Swallow  
 2025-04-09 The Solar War - John French  
 2025-04-16 Sons of the Selenar - Graham McNeill  
@@ -33,4 +28,11 @@ Finished books 2025
 2025-11-06 One Second After - William R. Forstchen  
 2025-11-24 Echoes of Eternity - Aaron Dembski-Bowden  
 2025-12-16 The End and the Death: Part I - Dan Abnett  
+
+**Finished books 2026**  
+2026-01-15 The End and the Death: Volume II  
+2026-01-20 The End and the Death: Volume III  
+2026-01-26 Era of Ruin  
+2026-01-28 One Year After  
+
 
