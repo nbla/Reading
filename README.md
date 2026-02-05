@@ -4,7 +4,7 @@ Various lists of books I'm reading or want to read. Finished books list can look
 Blue book = Currently reading  
 Checkmark = Done reading
 
-**Currently reading**
+**Currently reading**  
 The Way of Kings  
 Shadows of the Empire  
 The Devastation of Baal  
