@@ -1,13 +1,13 @@
 # 🌌 Star Wars Legends – From Shadows of the Empire to Mercy Kill
 
 ## ✴️ Pre–X-Wing Era (3–5 ABY)
-1. **Shadows of the Empire** - :blue_book: – Set between *The Empire Strikes Back* and *Return of the Jedi*.
+1. :blue_book: **Shadows of the Empire** – Set between *The Empire Strikes Back* and *Return of the Jedi*.
 2. **The Truce at Bakura** – Immediately after Endor; the beginning of the New Republic.
 
 ---
 
 ## 🛩️ X-Wing / Thrawn Era (6–12 ABY)
-1. **Rogue Squadron** *(Michael Stackpole)* :heavy_check_mark:
+1. :heavy_check_mark: **Rogue Squadron** *(Michael Stackpole)*  
 2. **Wedge’s Gamble**   
 3. **The Krytos Trap**
 4. **The Bacta War**

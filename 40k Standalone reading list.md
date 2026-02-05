@@ -168,7 +168,7 @@ All titles are selected for high quality, independence, and strong reputation.
 
 ---
 
-## 🛡️ The Devastation of Baal - :blue_book: ⭐⭐⭐⭐½
+## :blue_book: The Devastation of Baal ⭐⭐⭐⭐½
 **Author:** Guy Haley  
 **Focus:** Blood Angels, Tyranids  
 **Tone:** Epic but emotional  
