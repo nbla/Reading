@@ -39,4 +39,4 @@ The Final Day - William R. Forstchen
 2026-01-26: Era of Ruin - Dan Abnett  
 2026-01-28: One Year After - William R. Forstchen  
 2026-02-12: The Final Day - William R. Forstchen  
-2026-02-19: All is Dust - John French  
+2026-02-16: All is Dust - John French  
