@@ -40,3 +40,4 @@ The Final Day - William R. Forstchen
 2026-01-28: One Year After - William R. Forstchen  
 2026-02-12: The Final Day - William R. Forstchen  
 2026-02-16: All is Dust - John French  
+2026-02-22: Project Hail Mary - Andy Weir  
