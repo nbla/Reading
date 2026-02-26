@@ -9,10 +9,9 @@ Checkmark = Done reading
 [Star Wars Legends timeline](https://github.com/nbla/Reading/blob/main/Star%20Wars%20Legends%20timeline.md)
 
 **Currently reading**  
-The Way of Kings - Brandon Sanderson  
 Shadows of the Empire - Steve Perry  
 The Devastation of Baal - Guy Haley  
-The Final Day - William R. Forstchen  
+Five Years After - William R. Forstchen  
 
 **Finished books 2025**  
 2025-04-01: The Buried Dagger - James Swallow  
@@ -41,3 +40,4 @@ The Final Day - William R. Forstchen
 2026-02-12: The Final Day - William R. Forstchen  
 2026-02-16: All is Dust - John French  
 2026-02-22: Project Hail Mary - Andy Weir  
+2026-02-25: The Way of Kings - Brandon Sanderson  
