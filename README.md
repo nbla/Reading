@@ -11,7 +11,8 @@ Checkmark = Done reading
 **Currently reading**  
 Shadows of the Empire - Steve Perry  
 The Devastation of Baal - Guy Haley  
-Five Years After - William R. Forstchen  
+Animal Farm - George Orwell  
+Qualityland - Marc-Uwe Kling  
 
 **Finished books 2025**  
 2025-04-01: The Buried Dagger - James Swallow  
@@ -41,3 +42,4 @@ Five Years After - William R. Forstchen
 2026-02-16: All is Dust - John French  
 2026-02-22: Project Hail Mary - Andy Weir  
 2026-02-25: The Way of Kings - Brandon Sanderson  
+2026-03-03: Five Years After - William R. Forstchen  
