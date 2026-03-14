@@ -1,0 +1,376 @@
+:root {
+  --bg: #f6f1e8;
+  --paper: rgba(255, 251, 245, 0.78);
+  --paper-strong: #fffaf2;
+  --ink: #1f1a17;
+  --muted: #65584d;
+  --line: rgba(72, 51, 31, 0.14);
+  --accent: #b6542d;
+  --accent-soft: rgba(182, 84, 45, 0.12);
+  --shadow: 0 18px 45px rgba(68, 44, 26, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(182, 84, 45, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(90, 115, 81, 0.14), transparent 24%),
+    linear-gradient(180deg, #f4ebdc 0%, var(--bg) 46%, #efe8db 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.38;
+  background-image:
+    linear-gradient(rgba(95, 77, 57, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(95, 77, 57, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.85), transparent 92%);
+}
+
+.page-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 64px;
+}
+
+.hero,
+.controls,
+.section-block,
+.year-group {
+  backdrop-filter: blur(16px);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.hero {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1.6fr 1fr;
+  padding: 28px;
+  border-radius: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h1,
+h2,
+.book-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  line-height: 0.96;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 5.8rem);
+  max-width: 11ch;
+}
+
+.hero-text,
+.status,
+.book-description,
+.book-meta,
+.book-author {
+  color: var(--muted);
+}
+
+.hero-text {
+  max-width: 60ch;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.hero-panel {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.stat {
+  padding: 18px;
+  border-radius: 22px;
+  background: var(--paper-strong);
+  border: 1px solid rgba(90, 63, 31, 0.08);
+}
+
+.stat-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.stat strong {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+main {
+  margin-top: 24px;
+  display: grid;
+  gap: 24px;
+}
+
+.controls,
+.section-block,
+.year-group {
+  border-radius: 24px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+}
+
+.search {
+  display: grid;
+  gap: 8px;
+  flex: 1 1 320px;
+}
+
+.search span {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.search input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(70, 49, 31, 0.14);
+  border-radius: 16px;
+  font: inherit;
+  background: rgba(255, 251, 245, 0.9);
+  color: var(--ink);
+}
+
+.search input:focus {
+  outline: 2px solid rgba(182, 84, 45, 0.24);
+  border-color: rgba(182, 84, 45, 0.45);
+}
+
+.status {
+  margin: 0;
+  align-self: end;
+  font-size: 0.95rem;
+}
+
+.section-block {
+  padding: 22px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+.year-groups {
+  display: grid;
+  gap: 20px;
+}
+
+.year-group {
+  padding: 20px;
+}
+
+.year-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.year-group-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.year-total {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.book-card {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 22px;
+  background: var(--paper-strong);
+  border: 1px solid rgba(70, 49, 31, 0.08);
+  min-height: 100%;
+}
+
+.cover-wrap {
+  position: relative;
+  aspect-ratio: 2 / 3;
+}
+
+.cover,
+.cover-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+}
+
+.cover {
+  object-fit: cover;
+  border: 1px solid rgba(70, 49, 31, 0.1);
+  background: #e8ddd1;
+}
+
+.cover-fallback {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  text-align: center;
+  background:
+    linear-gradient(145deg, rgba(182, 84, 45, 0.88), rgba(83, 43, 30, 0.96)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent);
+  color: #fff9f0;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.cover.is-loaded + .cover-fallback {
+  display: none;
+}
+
+.book-topline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pill:empty {
+  display: none;
+}
+
+.book-title {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.book-author,
+.book-meta,
+.book-description {
+  margin: 6px 0 0;
+}
+
+.book-author {
+  font-weight: 700;
+}
+
+.book-meta {
+  font-size: 0.92rem;
+}
+
+.book-description {
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.book-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.book-links a {
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.book-links a:hover {
+  color: var(--accent);
+}
+
+.empty-state {
+  padding: 20px;
+  border-radius: 18px;
+  background: rgba(255, 250, 243, 0.72);
+  border: 1px dashed rgba(70, 49, 31, 0.18);
+  color: var(--muted);
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-shell {
+    width: min(100% - 20px, 1180px);
+    padding-top: 16px;
+  }
+
+  .hero,
+  .section-block,
+  .year-group {
+    padding: 18px;
+  }
+
+  .book-card {
+    grid-template-columns: 76px 1fr;
+  }
+
+  .book-title {
+    font-size: 1.7rem;
+  }
+}

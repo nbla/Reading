@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reading Shelf</title>
+  <meta name="description" content="A personal reading shelf built from README.md and enriched with live book metadata.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Personal Library</p>
+        <h1>Books I've Read, Still Reading, and What's Next to Revisit.</h1>
+        <p class="hero-text">
+          This shelf is generated from the reading log in <code>README.md</code> and filled out with live web data for covers,
+          descriptions, and publication details.
+        </p>
+      </div>
+      <div class="hero-panel">
+        <div class="stat">
+          <span class="stat-label">Books logged</span>
+          <strong id="total-books">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Currently reading</span>
+          <strong id="current-books">0</strong>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Finished</span>
+          <strong id="finished-books">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="controls">
+        <label class="search">
+          <span>Filter shelf</span>
+          <input id="search-input" type="search" placeholder="Search title, author, series, subject...">
+        </label>
+        <p id="status-text" class="status">Loading reading log...</p>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <p class="eyebrow">In Progress</p>
+          <h2>Currently reading</h2>
+        </div>
+        <div id="current-grid" class="book-grid"></div>
+      </section>
+
+      <section class="section-block">
+        <div class="section-heading">
+          <p class="eyebrow">Archive</p>
+          <h2>Finished books</h2>
+        </div>
+        <div id="year-groups" class="year-groups"></div>
+      </section>
+    </main>
+  </div>
+
+  <template id="book-card-template">
+    <article class="book-card">
+      <div class="cover-wrap">
+        <img class="cover" alt="" loading="lazy">
+        <div class="cover-fallback" aria-hidden="true"></div>
+      </div>
+      <div class="book-body">
+        <div class="book-topline">
+          <span class="pill reading-state"></span>
+          <span class="pill finish-date"></span>
+        </div>
+        <h3 class="book-title"></h3>
+        <p class="book-author"></p>
+        <p class="book-meta"></p>
+        <p class="book-description"></p>
+        <div class="book-links"></div>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    window.READING_SHELF_CONFIG = {
+      googleBooksApiKey: "",
+    };
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
