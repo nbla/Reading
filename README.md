@@ -17,14 +17,14 @@ Qualityland - Marc-Uwe Kling
 2025-07-03: All Systems Red - Martha Wells  
 2025-07-17: Saturnine - Dan Abnett  
 2025-07-28: Fury of Magnus - Graham McNeill  
-2025-09-01: Wool - Hugh Howie  
+2025-09-01: Wool - Hugh Howey  
 2025-10-13: Mortis - John French  
 2025-10-14: Garro: Knight of Grey - James Swallow  
 2025-10-30: Warhawk - Chris Wraight  
 2025-11-05: Rogue Squadron - Michael A. Stackpole  
 2025-11-06: One Second After - William R. Forstchen  
 2025-11-24: Echoes of Eternity - Aaron Dembski-Bowden  
-2025-12-16: The End and the Death: Part I - Dan Abnett  
+2025-12-16: The End and the Death: Volume I - Dan Abnett  
 
 **Finished books 2026**  
 2026-01-15: The End and the Death: Volume II - Dan Abnett  

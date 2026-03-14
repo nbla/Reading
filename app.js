@@ -2,6 +2,7 @@ const elements = {
   currentGrid: document.querySelector("#current-grid"),
   yearGroups: document.querySelector("#year-groups"),
   searchInput: document.querySelector("#search-input"),
+  clearCacheButton: document.querySelector("#clear-cache-button"),
   statusText: document.querySelector("#status-text"),
   totalBooks: document.querySelector("#total-books"),
   currentBooks: document.querySelector("#current-books"),
@@ -10,8 +11,87 @@ const elements = {
 };
 
 const GOOGLE_BOOKS_BASE = "https://www.googleapis.com/books/v1/volumes";
-const CACHE_PREFIX = "reading-shelf:";
+const CACHE_PREFIX = "reading-shelf:v2:";
 const GOOGLE_BOOKS_API_KEY = window.READING_SHELF_CONFIG?.googleBooksApiKey?.trim() || "";
+const BLACK_LIBRARY_OVERRIDES = [
+  {
+    title: "All is Dust",
+    author: "John French",
+    blackLibraryLink: "https://www.blacklibrary.com/series/Series-Chaos-Space-Marines/all-is-dust-ebook.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/15-all-is-dust.jpg",
+    description: "A Thousand Sons short story. To their foes, Thousand Sons are automata, deadly walking armoured suits who feel no pain or fear. But what is it like to live inside that armour, a spirit divorced from flesh?",
+    categories: ["Warhammer 40,000", "Short story"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
+  {
+    title: "The Solar War",
+    author: "John French",
+    blackLibraryLink: "https://www.blacklibrary.com/authors/john-french/the-solar-war-ebook-2019.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/BLPROCESSED-The-Solar-War-cover.jpg",
+    description: "Siege of Terra Book 1. After years of devastating war, Horus and his forces have arrived at Terra. But before they can set foot on the Throneworld, they must first break the defences of the Sol System.",
+    categories: ["The Horus Heresy", "Siege of Terra"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
+  {
+    title: "The First Wall",
+    author: "Gav Thorpe",
+    blackLibraryLink: "https://www.blacklibrary.com/the-horus-heresy/hh-sot/the-first-wall-ebook-2020.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/BLPROCESSED-The-First-Wall-Cover.jpg",
+    description: "Siege of Terra Book 3. The outer defences have fallen, but the walls of the Imperial Palace stand. To break them, the Traitors need their most devastating weapons, and so the Lion's Gate Spaceport must be theirs.",
+    categories: ["The Horus Heresy", "Siege of Terra"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
+  {
+    title: "Mortis",
+    author: "John French",
+    blackLibraryLink: "https://www.blacklibrary.com/all-products/siege-of-terra-mortis-ebook-2021.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/BLPROCESSED-Mortis-cover-2021.jpg",
+    description: "Siege of Terra Book 5. The Imperial forces are on the back foot once more as Horus commands the Titans of the Legio Mortis to breach the walls of the Imperial Palace.",
+    categories: ["The Horus Heresy", "Siege of Terra"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
+  {
+    title: "Warhawk",
+    author: "Chris Wraight",
+    blackLibraryLink: "https://www.blacklibrary.com/all-products/warhawk-ebook-2021.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/BLPROCESSED-Warhawk-Cover-2021.jpg",
+    description: "Siege of Terra Book 6. With the Lion's Gate space port taken by the enemy, Jaghatai Khan of the White Scars prepares a brazen gambit against the Death Guard.",
+    categories: ["The Horus Heresy", "Siege of Terra"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
+  {
+    title: "Echoes of Eternity",
+    author: "Aaron Dembski-Bowden",
+    blackLibraryLink: "https://www.blacklibrary.com/authors/aaron-dembski-bowden/ebook-echoes-of-eternity-eng-2022.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/BLPROCESSED-Echoes-of-Eternity-Cover-2022.jpg",
+    description: "Siege of Terra Book 7. With the walls of the Imperial Palace in ruins and the end in sight, Sanguinius prepares one final stand at the Delphic Battlement.",
+    categories: ["The Horus Heresy", "Siege of Terra"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
+  {
+    title: "Era of Ruin",
+    author: "Dan Abnett",
+    blackLibraryLink: "https://www.blacklibrary.com/all-products/ebook-siege-of-terra-era-of-ruin-eng-2025.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/BLPROCESSED-6063018100736-Era-of-Ruin-eBook-Cover-2025.jpg",
+    description: "A Siege of Terra anthology. Horus is dead and his Heresy is over, but for those left behind a new era of ruin is dawning across the Imperium.",
+    categories: ["The Horus Heresy", "Anthology"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
+];
 
 let appState = {
   books: [],
@@ -146,27 +226,29 @@ async function enrichBooks(books) {
 
 async function enrichBook(book) {
   const cacheKey = `${CACHE_PREFIX}${book.id}`;
+  const blackLibrary = getBlackLibraryOverride(book);
   const cached = safeReadCache(cacheKey);
   if (cached) {
-    return { ...book, ...cached };
+    return mergeBookMetadata(book, cached, blackLibrary);
   }
 
   try {
-    const query = encodeURIComponent(`intitle:"${book.title}" inauthor:"${book.author}"`);
+    const query = `intitle:"${book.title}" inauthor:"${book.author}"`;
     const response = await fetch(buildVolumesUrl(query));
     if (!response.ok) {
-      return { ...book, ...applyFallbackMetadata(book) };
+      return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary);
     }
 
     const payload = await response.json();
     const bestMatch = findBestMatch(book, payload.items || []);
     const metadata = bestMatch ? mapGoogleBook(bestMatch) : applyFallbackMetadata(book);
 
-    localStorage.setItem(cacheKey, JSON.stringify(metadata));
-    return { ...book, ...metadata };
+    const mergedMetadata = mergeBookMetadata(book, metadata, blackLibrary);
+    localStorage.setItem(cacheKey, JSON.stringify(mergedMetadata));
+    return mergedMetadata;
   } catch (error) {
     console.warn("Could not load or cache book metadata", error);
-    return { ...book, ...applyFallbackMetadata(book) };
+    return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary);
   }
 }
 
@@ -194,6 +276,9 @@ function mapGoogleBook(item) {
     infoLink: info.infoLink || item.selfLink || "",
     previewLink: info.previewLink || "",
     cover: imageLinks.thumbnail?.replace("http://", "https://") || imageLinks.smallThumbnail?.replace("http://", "https://") || "",
+    blackLibraryLink: "",
+    blackLibraryLabel: "",
+    metadataStatus: "loaded",
   };
 }
 
@@ -207,6 +292,9 @@ function applyFallbackMetadata(book) {
     infoLink: "",
     previewLink: "",
     cover: "",
+    blackLibraryLink: "",
+    blackLibraryLabel: "",
+    metadataStatus: "fallback",
   };
 }
 
@@ -290,6 +378,8 @@ function createBookCard(book) {
   const description = fragment.querySelector(".book-description");
   const links = fragment.querySelector(".book-links");
 
+  card.tabIndex = 0;
+  card.setAttribute("aria-label", `${book.title} by ${book.author}`);
   title.textContent = book.title;
   author.textContent = book.author;
   state.textContent = book.state;
@@ -308,6 +398,7 @@ function createBookCard(book) {
 
   appendLink(links, book.infoLink, "Google Books");
   appendLink(links, book.previewLink, "Preview");
+  appendLink(links, book.blackLibraryLink, book.blackLibraryLabel || "Black Library");
 
   card.dataset.search = normalize([
     book.title,
@@ -326,7 +417,13 @@ function buildMetaLine(book) {
   if (book.pageCount) parts.push(`${book.pageCount} pages`);
   if (book.categories?.length) parts.push(book.categories.slice(0, 2).join(", "));
   if (book.publisher) parts.push(book.publisher);
-  return parts.join(" | ") || "Metadata is still loading or unavailable for this title.";
+  if (parts.length) {
+    return parts.join(" | ");
+  }
+
+  return book.metadataStatus === "fallback"
+    ? "No extra metadata was found for this title."
+    : "Loading metadata...";
 }
 
 function appendLink(container, href, label) {
@@ -336,6 +433,13 @@ function appendLink(container, href, label) {
   link.target = "_blank";
   link.rel = "noreferrer";
   link.textContent = label;
+  link.addEventListener("click", () => {
+    window.setTimeout(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }, 0);
+  });
   container.append(link);
 }
 
@@ -420,6 +524,25 @@ elements.searchInput.addEventListener("input", (event) => {
   render();
 });
 
+elements.clearCacheButton.addEventListener("click", async () => {
+  elements.clearCacheButton.disabled = true;
+  clearMetadataCache();
+  setStatus("Metadata cache cleared. Reloading book data...");
+
+  try {
+    await bootstrap();
+  } finally {
+    elements.clearCacheButton.disabled = false;
+  }
+});
+
+window.addEventListener("pageshow", resetActiveCardFocus);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    resetActiveCardFocus();
+  }
+});
+
 function safeReadCache(cacheKey) {
   try {
     const cached = localStorage.getItem(cacheKey);
@@ -440,4 +563,76 @@ function buildVolumesUrl(query) {
   }
 
   return url.toString();
+}
+
+function getBlackLibraryOverride(book) {
+  return BLACK_LIBRARY_OVERRIDES.find((entry) =>
+    normalize(entry.title) === normalize(book.title) &&
+    normalize(entry.author) === normalize(book.author)
+  ) || null;
+}
+
+function mergeBookMetadata(book, primary, secondary) {
+  if (!secondary) {
+    return { ...book, ...primary };
+  }
+
+  const fallbackDescription = `${book.title} by ${book.author}.`;
+  return {
+    ...book,
+    ...secondary,
+    ...primary,
+    description: pickMetadataValue(primary.description, secondary.description, fallbackDescription),
+    publishedDate: pickMetadataValue(primary.publishedDate, secondary.publishedDate, ""),
+    categories: primary.categories?.length ? primary.categories : (secondary.categories || []),
+    pageCount: pickMetadataValue(primary.pageCount, secondary.pageCount, ""),
+    publisher: pickMetadataValue(primary.publisher, secondary.publisher, ""),
+    infoLink: pickMetadataValue(primary.infoLink, secondary.infoLink, ""),
+    previewLink: pickMetadataValue(primary.previewLink, secondary.previewLink, ""),
+    cover: pickMetadataValue(primary.cover, secondary.cover, ""),
+    blackLibraryLink: pickMetadataValue(primary.blackLibraryLink, secondary.blackLibraryLink, ""),
+    blackLibraryLabel: pickMetadataValue(primary.blackLibraryLabel, secondary.blackLibraryLabel, ""),
+    metadataStatus: primary.metadataStatus === "loaded" ? "loaded" : secondary.metadataStatus,
+  };
+}
+
+function pickMetadataValue(primary, secondary, emptyValue) {
+  if (primary !== undefined && primary !== null && primary !== emptyValue) {
+    return primary;
+  }
+
+  if (secondary !== undefined && secondary !== null && secondary !== emptyValue) {
+    return secondary;
+  }
+
+  return emptyValue;
+}
+
+function clearMetadataCache() {
+  const keysToRemove = [];
+
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (key?.startsWith(CACHE_PREFIX)) {
+      keysToRemove.push(key);
+    }
+  }
+
+  keysToRemove.forEach((key) => localStorage.removeItem(key));
+}
+
+function resetActiveCardFocus() {
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLElement)) {
+    return;
+  }
+
+  if (activeElement.classList.contains("book-card")) {
+    activeElement.blur();
+    return;
+  }
+
+  if (activeElement.closest(".book-card")) {
+    activeElement.blur();
+  }
 }

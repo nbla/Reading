@@ -13,13 +13,30 @@
 <body>
   <div class="page-shell">
     <header class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Personal Library</p>
-        <h1>Books I've Read, Still Reading, and What's Next to Revisit.</h1>
-        <p class="hero-text">
-          This shelf is generated from the reading log in <code>README.md</code> and filled out with live web data for covers,
-          descriptions, and publication details.
-        </p>
+      <div class="hero-copy" aria-hidden="true">
+        <div class="hero-art">
+          <span class="hero-book book-tall">
+            <span class="hero-book-band"></span>
+            <span class="hero-book-pages"></span>
+          </span>
+          <span class="hero-book book-lean">
+            <span class="hero-book-band"></span>
+            <span class="hero-book-pages"></span>
+          </span>
+          <span class="hero-book book-short">
+            <span class="hero-book-band"></span>
+            <span class="hero-book-pages"></span>
+          </span>
+          <span class="hero-book book-wide">
+            <span class="hero-book-band"></span>
+            <span class="hero-book-pages"></span>
+          </span>
+          <span class="hero-book book-accent">
+            <span class="hero-book-band"></span>
+            <span class="hero-book-pages"></span>
+          </span>
+          <span class="hero-shelf"></span>
+        </div>
       </div>
       <div class="hero-panel">
         <div class="stat">
@@ -43,7 +60,10 @@
           <span>Filter shelf</span>
           <input id="search-input" type="search" placeholder="Search title, author, series, subject...">
         </label>
-        <p id="status-text" class="status">Loading reading log...</p>
+        <div class="control-actions">
+          <button id="clear-cache-button" class="secondary-button" type="button">Clear metadata cache</button>
+          <p id="status-text" class="status">Loading reading log...</p>
+        </div>
       </section>
 
       <section class="section-block">
@@ -77,9 +97,11 @@
         </div>
         <h3 class="book-title"></h3>
         <p class="book-author"></p>
-        <p class="book-meta"></p>
-        <p class="book-description"></p>
-        <div class="book-links"></div>
+        <div class="book-popup" role="tooltip">
+          <p class="book-meta"></p>
+          <p class="book-description"></p>
+          <div class="book-links"></div>
+        </div>
       </div>
     </article>
   </template>
