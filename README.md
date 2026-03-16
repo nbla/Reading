@@ -36,5 +36,5 @@ Qualityland - Marc-Uwe Kling
 2026-02-22: Project Hail Mary - Andy Weir  
 2026-02-25: The Way of Kings - Brandon Sanderson  
 2026-03-03: Five Years After - William R. Forstchen  
-2026-03-09: Animal Farm - George Orwell 
+2026-03-09: Animal Farm - George Orwell  
 2026-03-16: The Devastation of Baal - Guy Haley  
