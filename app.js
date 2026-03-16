@@ -11,15 +11,29 @@ const elements = {
 };
 
 const GOOGLE_BOOKS_BASE = "https://www.googleapis.com/books/v1/volumes";
-const CACHE_PREFIX = "reading-shelf:v2:";
+const OPEN_LIBRARY_SEARCH_BASE = "https://openlibrary.org/search.json";
+const OPEN_LIBRARY_COVERS_BASE = "https://covers.openlibrary.org/b/id";
+const CACHE_PREFIX = "reading-shelf:v4:";
 const GOOGLE_BOOKS_API_KEY = window.READING_SHELF_CONFIG?.googleBooksApiKey?.trim() || "";
 const BLACK_LIBRARY_OVERRIDES = [
+  {
+    title: "The Lords of Silence",
+    author: "Chris Wraight",
+    blackLibraryLink: "https://www.blacklibrary.com/warhammer-40000/novels/ebook-the-lords-of-silence.html",
+    blackLibraryLabel: "Black Library",
+    cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/BLPROCESSED-Lords-of-Silence-Cover.jpg",
+    description: "A Warhammer 40,000 novel. The Death Guard are advancing inexorably across the stars, and warbands under Vorx carve corruption and decay into the Imperium's worlds.",
+    categories: ["Warhammer 40,000"],
+    publisher: "Black Library",
+    metadataStatus: "loaded",
+  },
   {
     title: "All is Dust",
     author: "John French",
     blackLibraryLink: "https://www.blacklibrary.com/series/Series-Chaos-Space-Marines/all-is-dust-ebook.html",
     blackLibraryLabel: "Black Library",
     cover: "https://www.blacklibrary.com/Images/Product/DefaultBL/large/15-all-is-dust.jpg",
+    preferCover: true,
     description: "A Thousand Sons short story. To their foes, Thousand Sons are automata, deadly walking armoured suits who feel no pain or fear. But what is it like to live inside that armour, a spirit divorced from flesh?",
     categories: ["Warhammer 40,000", "Short story"],
     publisher: "Black Library",
@@ -227,28 +241,31 @@ async function enrichBooks(books) {
 async function enrichBook(book) {
   const cacheKey = `${CACHE_PREFIX}${book.id}`;
   const blackLibrary = getBlackLibraryOverride(book);
+  const openLibrary = await searchOpenLibrary(book);
   const cached = safeReadCache(cacheKey);
   if (cached) {
-    return mergeBookMetadata(book, cached, blackLibrary);
+    return mergeBookMetadata(book, cached, blackLibrary, openLibrary);
   }
 
   try {
-    const query = `intitle:"${book.title}" inauthor:"${book.author}"`;
-    const response = await fetch(buildVolumesUrl(query));
-    if (!response.ok) {
-      return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary);
+    let items = await searchGoogleBooks(`intitle:"${book.title}" inauthor:"${book.author}"`);
+    if (!items.length) {
+      items = await searchGoogleBooks(`${book.title} ${book.author}`);
     }
 
-    const payload = await response.json();
-    const bestMatch = findBestMatch(book, payload.items || []);
+    if (!items.length) {
+      return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary, openLibrary);
+    }
+
+    const bestMatch = findBestMatch(book, items);
     const metadata = bestMatch ? mapGoogleBook(bestMatch) : applyFallbackMetadata(book);
 
-    const mergedMetadata = mergeBookMetadata(book, metadata, blackLibrary);
+    const mergedMetadata = mergeBookMetadata(book, metadata, blackLibrary, openLibrary);
     localStorage.setItem(cacheKey, JSON.stringify(mergedMetadata));
     return mergedMetadata;
   } catch (error) {
     console.warn("Could not load or cache book metadata", error);
-    return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary);
+    return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary, openLibrary);
   }
 }
 
@@ -392,6 +409,7 @@ function createBookCard(book) {
     cover.src = book.cover;
     cover.alt = `Cover of ${book.title}`;
     cover.addEventListener("load", () => cover.classList.add("is-loaded"), { once: true });
+    cover.addEventListener("error", () => cover.remove(), { once: true });
   } else {
     cover.remove();
   }
@@ -565,6 +583,37 @@ function buildVolumesUrl(query) {
   return url.toString();
 }
 
+async function searchGoogleBooks(query) {
+  const response = await fetch(buildVolumesUrl(query));
+  if (!response.ok) {
+    return [];
+  }
+
+  const payload = await response.json();
+  return payload.items || [];
+}
+
+async function searchOpenLibrary(book) {
+  try {
+    const url = new URL(OPEN_LIBRARY_SEARCH_BASE);
+    url.searchParams.set("title", book.title);
+    url.searchParams.set("author", book.author);
+    url.searchParams.set("limit", "5");
+
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = await response.json();
+    const bestMatch = findBestOpenLibraryMatch(book, payload.docs || []);
+    return bestMatch ? mapOpenLibraryBook(bestMatch) : null;
+  } catch (error) {
+    console.warn("Could not load Open Library metadata", error);
+    return null;
+  }
+}
+
 function getBlackLibraryOverride(book) {
   return BLACK_LIBRARY_OVERRIDES.find((entry) =>
     normalize(entry.title) === normalize(book.title) &&
@@ -572,37 +621,75 @@ function getBlackLibraryOverride(book) {
   ) || null;
 }
 
-function mergeBookMetadata(book, primary, secondary) {
-  if (!secondary) {
+function findBestOpenLibraryMatch(book, docs) {
+  const normalizedTitle = normalize(book.title);
+  const normalizedAuthor = normalize(book.author);
+
+  return docs.find((doc) => {
+    const docTitle = normalize(doc.title || "");
+    const docAuthors = normalize((doc.author_name || []).join(" "));
+    return docTitle.includes(normalizedTitle) && docAuthors.includes(normalizedAuthor);
+  }) || docs[0];
+}
+
+function mapOpenLibraryBook(doc) {
+  return {
+    description: "",
+    publishedDate: doc.first_publish_year ? String(doc.first_publish_year) : "",
+    categories: doc.subject?.slice(0, 2) || [],
+    pageCount: "",
+    publisher: "",
+    infoLink: doc.key ? `https://openlibrary.org${doc.key}` : "",
+    previewLink: "",
+    cover: doc.cover_i ? `${OPEN_LIBRARY_COVERS_BASE}/${doc.cover_i}-L.jpg?default=false` : "",
+    blackLibraryLink: "",
+    blackLibraryLabel: "",
+    metadataStatus: "loaded",
+  };
+}
+
+function mergeBookMetadata(book, primary, ...fallbacks) {
+  const availableFallbacks = fallbacks.filter(Boolean);
+  if (!availableFallbacks.length) {
     return { ...book, ...primary };
   }
 
   const fallbackDescription = `${book.title} by ${book.author}.`;
+  const preferredBlackLibrary = availableFallbacks.find((source) => source.blackLibraryLink);
+  const forcedCoverSource = availableFallbacks.find((source) => source.preferCover && source.cover);
+  const categories = primary.categories?.length
+    ? primary.categories
+    : (availableFallbacks.find((source) => source.categories?.length)?.categories || []);
+
   return {
     ...book,
-    ...secondary,
+    ...Object.assign({}, ...availableFallbacks),
     ...primary,
-    description: pickMetadataValue(primary.description, secondary.description, fallbackDescription),
-    publishedDate: pickMetadataValue(primary.publishedDate, secondary.publishedDate, ""),
-    categories: primary.categories?.length ? primary.categories : (secondary.categories || []),
-    pageCount: pickMetadataValue(primary.pageCount, secondary.pageCount, ""),
-    publisher: pickMetadataValue(primary.publisher, secondary.publisher, ""),
-    infoLink: pickMetadataValue(primary.infoLink, secondary.infoLink, ""),
-    previewLink: pickMetadataValue(primary.previewLink, secondary.previewLink, ""),
-    cover: pickMetadataValue(primary.cover, secondary.cover, ""),
-    blackLibraryLink: pickMetadataValue(primary.blackLibraryLink, secondary.blackLibraryLink, ""),
-    blackLibraryLabel: pickMetadataValue(primary.blackLibraryLabel, secondary.blackLibraryLabel, ""),
-    metadataStatus: primary.metadataStatus === "loaded" ? "loaded" : secondary.metadataStatus,
+    description: pickMetadataValue(primary.description, availableFallbacks.map((source) => source.description), fallbackDescription),
+    publishedDate: pickMetadataValue(primary.publishedDate, availableFallbacks.map((source) => source.publishedDate), ""),
+    categories,
+    pageCount: pickMetadataValue(primary.pageCount, availableFallbacks.map((source) => source.pageCount), ""),
+    publisher: pickMetadataValue(primary.publisher, availableFallbacks.map((source) => source.publisher), ""),
+    infoLink: pickMetadataValue(primary.infoLink, availableFallbacks.map((source) => source.infoLink), ""),
+    previewLink: pickMetadataValue(primary.previewLink, availableFallbacks.map((source) => source.previewLink), ""),
+    cover: forcedCoverSource?.cover || pickMetadataValue(primary.cover, availableFallbacks.map((source) => source.cover), ""),
+    blackLibraryLink: preferredBlackLibrary?.blackLibraryLink || pickMetadataValue(primary.blackLibraryLink, availableFallbacks.map((source) => source.blackLibraryLink), ""),
+    blackLibraryLabel: preferredBlackLibrary?.blackLibraryLabel || pickMetadataValue(primary.blackLibraryLabel, availableFallbacks.map((source) => source.blackLibraryLabel), ""),
+    metadataStatus: primary.metadataStatus === "loaded"
+      ? "loaded"
+      : (availableFallbacks.find((source) => source.metadataStatus === "loaded")?.metadataStatus || primary.metadataStatus),
   };
 }
 
-function pickMetadataValue(primary, secondary, emptyValue) {
+function pickMetadataValue(primary, fallbackValues, emptyValue) {
   if (primary !== undefined && primary !== null && primary !== emptyValue) {
     return primary;
   }
 
-  if (secondary !== undefined && secondary !== null && secondary !== emptyValue) {
-    return secondary;
+  for (const value of fallbackValues) {
+    if (value !== undefined && value !== null && value !== emptyValue) {
+      return value;
+    }
   }
 
   return emptyValue;
