@@ -3,7 +3,7 @@ This is a list of books I read since getting my Kobo Clara Colour. Finished book
 
 **Currently reading**  
 Shadows of the Empire - Steve Perry  
-The Devastation of Baal - Guy Haley  
+The Lords of Silence - Chris Wraight  
 Words of Radiance -  Brandon Sanderson  
 Qualityland - Marc-Uwe Kling  
 
@@ -37,3 +37,4 @@ Qualityland - Marc-Uwe Kling
 2026-02-25: The Way of Kings - Brandon Sanderson  
 2026-03-03: Five Years After - William R. Forstchen  
 2026-03-09: Animal Farm - George Orwell 
+2026-03-16: The Devastation of Baal - Guy Haley  
