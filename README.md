@@ -2,10 +2,10 @@
 This is a list of books I read since getting my Kobo Clara Colour. Finished books list can look wonky with the dates but I'm reading 3-4 books at the same time.
 
 **Currently reading**  
-Shadows of the Empire - Steve Perry  
 The Lords of Silence - Chris Wraight  
 Words of Radiance -  Brandon Sanderson  
 Qualityland - Marc-Uwe Kling  
+The Truce at Bakura - Kathy Tyers  
 
 **Finished books 2025**  
 2025-04-01: The Buried Dagger - James Swallow  
@@ -38,3 +38,4 @@ Qualityland - Marc-Uwe Kling
 2026-03-03: Five Years After - William R. Forstchen  
 2026-03-09: Animal Farm - George Orwell  
 2026-03-16: The Devastation of Baal - Guy Haley  
+2026-03-24: Shadows of the Empire - Steve Perry  
