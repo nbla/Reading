@@ -1,5 +1,5 @@
 # Reading
-This is a list of books I read since getting my Kobo Clara Colour. Finished books list can look wonky with the dates but I'm reading 3-4 books at the same time.
+This is a list of books I read since getting my Kobo Clara Colour. Finished books list can look wonky with the dates but I'm reading 3-4 books at the same time. 
 
 **Currently reading**  
 The Lords of Silence - Chris Wraight  
