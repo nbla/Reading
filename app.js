@@ -13,7 +13,7 @@ const elements = {
 const GOOGLE_BOOKS_BASE = "https://www.googleapis.com/books/v1/volumes";
 const OPEN_LIBRARY_SEARCH_BASE = "https://openlibrary.org/search.json";
 const OPEN_LIBRARY_COVERS_BASE = "https://covers.openlibrary.org/b/id";
-const CACHE_PREFIX = "reading-shelf:v4:";
+const CACHE_PREFIX = "reading-shelf:v5:";
 const GOOGLE_BOOKS_API_KEY = window.READING_SHELF_CONFIG?.googleBooksApiKey?.trim() || "";
 const BLACK_LIBRARY_OVERRIDES = [
   {
@@ -284,6 +284,16 @@ function findBestMatch(book, items) {
 function mapGoogleBook(item) {
   const info = item.volumeInfo || {};
   const imageLinks = info.imageLinks || {};
+  const coverCandidates = [
+    imageLinks.extraLarge,
+    imageLinks.large,
+    imageLinks.medium,
+    imageLinks.thumbnail,
+    imageLinks.smallThumbnail,
+  ]
+    .filter(Boolean)
+    .map((url) => url.replace("http://", "https://"));
+
   return {
     description: stripHtml(info.description || "No description found for this title yet."),
     publishedDate: info.publishedDate || "",
@@ -292,7 +302,8 @@ function mapGoogleBook(item) {
     publisher: info.publisher || "",
     infoLink: info.infoLink || item.selfLink || "",
     previewLink: info.previewLink || "",
-    cover: imageLinks.thumbnail?.replace("http://", "https://") || imageLinks.smallThumbnail?.replace("http://", "https://") || "",
+    cover: coverCandidates[0] || "",
+    coverCandidates,
     blackLibraryLink: "",
     blackLibraryLabel: "",
     metadataStatus: "loaded",
@@ -309,6 +320,7 @@ function applyFallbackMetadata(book) {
     infoLink: "",
     previewLink: "",
     cover: "",
+    coverCandidates: [],
     blackLibraryLink: "",
     blackLibraryLabel: "",
     metadataStatus: "fallback",
@@ -406,10 +418,8 @@ function createBookCard(book) {
   fallback.textContent = buildMonogram(book.title);
 
   if (book.cover) {
-    cover.src = book.cover;
     cover.alt = `Cover of ${book.title}`;
-    cover.addEventListener("load", () => cover.classList.add("is-loaded"), { once: true });
-    cover.addEventListener("error", () => cover.remove(), { once: true });
+    attachCoverCandidates(cover, book.coverCandidates?.length ? book.coverCandidates : [book.cover]);
   } else {
     cover.remove();
   }
@@ -633,6 +643,7 @@ function findBestOpenLibraryMatch(book, docs) {
 }
 
 function mapOpenLibraryBook(doc) {
+  const cover = doc.cover_i ? `${OPEN_LIBRARY_COVERS_BASE}/${doc.cover_i}-L.jpg?default=false` : "";
   return {
     description: "",
     publishedDate: doc.first_publish_year ? String(doc.first_publish_year) : "",
@@ -641,7 +652,8 @@ function mapOpenLibraryBook(doc) {
     publisher: "",
     infoLink: doc.key ? `https://openlibrary.org${doc.key}` : "",
     previewLink: "",
-    cover: doc.cover_i ? `${OPEN_LIBRARY_COVERS_BASE}/${doc.cover_i}-L.jpg?default=false` : "",
+    cover,
+    coverCandidates: cover ? [cover] : [],
     blackLibraryLink: "",
     blackLibraryLabel: "",
     metadataStatus: "loaded",
@@ -657,6 +669,7 @@ function mergeBookMetadata(book, primary, ...fallbacks) {
   const fallbackDescription = `${book.title} by ${book.author}.`;
   const preferredBlackLibrary = availableFallbacks.find((source) => source.blackLibraryLink);
   const forcedCoverSource = availableFallbacks.find((source) => source.preferCover && source.cover);
+  const coverCandidates = buildCoverCandidates(primary, availableFallbacks, forcedCoverSource);
   const categories = primary.categories?.length
     ? primary.categories
     : (availableFallbacks.find((source) => source.categories?.length)?.categories || []);
@@ -672,7 +685,8 @@ function mergeBookMetadata(book, primary, ...fallbacks) {
     publisher: pickMetadataValue(primary.publisher, availableFallbacks.map((source) => source.publisher), ""),
     infoLink: pickMetadataValue(primary.infoLink, availableFallbacks.map((source) => source.infoLink), ""),
     previewLink: pickMetadataValue(primary.previewLink, availableFallbacks.map((source) => source.previewLink), ""),
-    cover: forcedCoverSource?.cover || pickMetadataValue(primary.cover, availableFallbacks.map((source) => source.cover), ""),
+    cover: coverCandidates[0] || "",
+    coverCandidates,
     blackLibraryLink: preferredBlackLibrary?.blackLibraryLink || pickMetadataValue(primary.blackLibraryLink, availableFallbacks.map((source) => source.blackLibraryLink), ""),
     blackLibraryLabel: preferredBlackLibrary?.blackLibraryLabel || pickMetadataValue(primary.blackLibraryLabel, availableFallbacks.map((source) => source.blackLibraryLabel), ""),
     metadataStatus: primary.metadataStatus === "loaded"
@@ -693,6 +707,54 @@ function pickMetadataValue(primary, fallbackValues, emptyValue) {
   }
 
   return emptyValue;
+}
+
+function buildCoverCandidates(primary, fallbacks, forcedCoverSource) {
+  const candidates = [];
+
+  if (forcedCoverSource?.cover) {
+    candidates.push(forcedCoverSource.cover);
+  }
+
+  candidates.push(...normalizeCoverCandidates(primary.coverCandidates));
+  if (primary.cover) {
+    candidates.push(primary.cover);
+  }
+
+  for (const source of fallbacks) {
+    candidates.push(...normalizeCoverCandidates(source.coverCandidates));
+    if (source.cover) {
+      candidates.push(source.cover);
+    }
+  }
+
+  return [...new Set(candidates.filter(Boolean))];
+}
+
+function normalizeCoverCandidates(value) {
+  return Array.isArray(value) ? value.filter(Boolean) : [];
+}
+
+function attachCoverCandidates(image, candidates) {
+  const queue = [...new Set(candidates.filter(Boolean))];
+  if (!queue.length) {
+    image.remove();
+    return;
+  }
+
+  const tryNext = () => {
+    const next = queue.shift();
+    if (!next) {
+      image.remove();
+      return;
+    }
+
+    image.src = next;
+  };
+
+  image.addEventListener("load", () => image.classList.add("is-loaded"), { once: true });
+  image.addEventListener("error", tryNext);
+  tryNext();
 }
 
 function clearMetadataCache() {
