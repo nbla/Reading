@@ -3,7 +3,7 @@ This is a list of books I read since getting my Kobo Clara Colour. Finished book
 
 **Currently reading**  
 The Lords of Silence - Chris Wraight  
-Words of Radiance -  Brandon Sanderson  
+Oathbringer -  Brandon Sanderson  
 Qualityland - Marc-Uwe Kling  
 The Truce at Bakura - Kathy Tyers  
 
@@ -39,3 +39,5 @@ The Truce at Bakura - Kathy Tyers
 2026-03-09: Animal Farm - George Orwell  
 2026-03-16: The Devastation of Baal - Guy Haley  
 2026-03-24: Shadows of the Empire - Steve Perry  
+2026-04-04: Words of Radiance - Brandon Sanderson  
+2026-04-05: Edgedancer - Brandon Sanderson  
