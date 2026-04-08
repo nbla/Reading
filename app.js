@@ -11,9 +11,7 @@ const elements = {
 };
 
 const GOOGLE_BOOKS_BASE = "https://www.googleapis.com/books/v1/volumes";
-const OPEN_LIBRARY_SEARCH_BASE = "https://openlibrary.org/search.json";
-const OPEN_LIBRARY_COVERS_BASE = "https://covers.openlibrary.org/b/id";
-const CACHE_PREFIX = "reading-shelf:v5:";
+const CACHE_PREFIX = "reading-shelf:v11:";
 const GOOGLE_BOOKS_API_KEY = window.READING_SHELF_CONFIG?.googleBooksApiKey?.trim() || "";
 const BLACK_LIBRARY_OVERRIDES = [
   {
@@ -134,7 +132,13 @@ async function bootstrap() {
     };
 
     render();
-    setStatus("Shelf ready. Covers and descriptions are pulled live from Google Books.");
+    const googleLoadedCount = enrichedBooks.filter((book) => book.metadataStatus === "loaded" && !book.blackLibraryLink).length;
+    const blackLibraryCount = enrichedBooks.filter((book) => book.blackLibraryLink).length;
+    if (googleLoadedCount === 0 && blackLibraryCount < enrichedBooks.length) {
+      setStatus("Shelf loaded, but Google Books data may be getting blocked or throttled.");
+    } else {
+      setStatus("Shelf ready. Covers and descriptions are pulled live from Google Books.");
+    }
   } catch (error) {
     console.error(error);
     setStatus("Could not load README.md. Serve this folder with a local web server instead of opening the HTML file directly.");
@@ -235,49 +239,40 @@ function buildBookId(title, author) {
 }
 
 async function enrichBooks(books) {
-  return runWithConcurrency(books, 4, enrichBook);
+  return runWithConcurrency(books, 2, enrichBook);
 }
 
 async function enrichBook(book) {
   const cacheKey = `${CACHE_PREFIX}${book.id}`;
   const blackLibrary = getBlackLibraryOverride(book);
-  const openLibrary = await searchOpenLibrary(book);
   const cached = safeReadCache(cacheKey);
   if (cached) {
-    return mergeBookMetadata(book, cached, blackLibrary, openLibrary);
+    return mergeBookMetadata(book, cached, blackLibrary);
   }
 
   try {
-    let items = await searchGoogleBooks(`intitle:"${book.title}" inauthor:"${book.author}"`);
-    if (!items.length) {
-      items = await searchGoogleBooks(`${book.title} ${book.author}`);
-    }
+    const items = await searchGoogleBooksForBook(book);
 
     if (!items.length) {
-      return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary, openLibrary);
+      return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary);
     }
 
     const bestMatch = findBestMatch(book, items);
     const metadata = bestMatch ? mapGoogleBook(bestMatch) : applyFallbackMetadata(book);
 
-    const mergedMetadata = mergeBookMetadata(book, metadata, blackLibrary, openLibrary);
+    const mergedMetadata = mergeBookMetadata(book, metadata, blackLibrary);
     localStorage.setItem(cacheKey, JSON.stringify(mergedMetadata));
     return mergedMetadata;
   } catch (error) {
     console.warn("Could not load or cache book metadata", error);
-    return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary, openLibrary);
+    return mergeBookMetadata(book, applyFallbackMetadata(book), blackLibrary);
   }
 }
 
 function findBestMatch(book, items) {
-  const normalizedTitle = normalize(book.title);
-  const normalizedAuthor = normalize(book.author);
-
   return items.find((item) => {
     const info = item.volumeInfo || {};
-    const itemTitle = normalize(info.title || "");
-    const itemAuthors = normalize((info.authors || []).join(" "));
-    return itemTitle.includes(normalizedTitle) && itemAuthors.includes(normalizedAuthor);
+    return titleMatches(book.title, info.title || "") && authorMatches(book.author, info.authors || []);
   }) || items[0];
 }
 
@@ -603,25 +598,8 @@ async function searchGoogleBooks(query) {
   return payload.items || [];
 }
 
-async function searchOpenLibrary(book) {
-  try {
-    const url = new URL(OPEN_LIBRARY_SEARCH_BASE);
-    url.searchParams.set("title", book.title);
-    url.searchParams.set("author", book.author);
-    url.searchParams.set("limit", "5");
-
-    const response = await fetch(url.toString());
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload = await response.json();
-    const bestMatch = findBestOpenLibraryMatch(book, payload.docs || []);
-    return bestMatch ? mapOpenLibraryBook(bestMatch) : null;
-  } catch (error) {
-    console.warn("Could not load Open Library metadata", error);
-    return null;
-  }
+async function searchGoogleBooksForBook(book) {
+  return searchGoogleBooks(`"${book.title}" "${book.author}"`);
 }
 
 function getBlackLibraryOverride(book) {
@@ -629,35 +607,6 @@ function getBlackLibraryOverride(book) {
     normalize(entry.title) === normalize(book.title) &&
     normalize(entry.author) === normalize(book.author)
   ) || null;
-}
-
-function findBestOpenLibraryMatch(book, docs) {
-  const normalizedTitle = normalize(book.title);
-  const normalizedAuthor = normalize(book.author);
-
-  return docs.find((doc) => {
-    const docTitle = normalize(doc.title || "");
-    const docAuthors = normalize((doc.author_name || []).join(" "));
-    return docTitle.includes(normalizedTitle) && docAuthors.includes(normalizedAuthor);
-  }) || docs[0];
-}
-
-function mapOpenLibraryBook(doc) {
-  const cover = doc.cover_i ? `${OPEN_LIBRARY_COVERS_BASE}/${doc.cover_i}-L.jpg?default=false` : "";
-  return {
-    description: "",
-    publishedDate: doc.first_publish_year ? String(doc.first_publish_year) : "",
-    categories: doc.subject?.slice(0, 2) || [],
-    pageCount: "",
-    publisher: "",
-    infoLink: doc.key ? `https://openlibrary.org${doc.key}` : "",
-    previewLink: "",
-    cover,
-    coverCandidates: cover ? [cover] : [],
-    blackLibraryLink: "",
-    blackLibraryLabel: "",
-    metadataStatus: "loaded",
-  };
 }
 
 function mergeBookMetadata(book, primary, ...fallbacks) {
@@ -670,21 +619,35 @@ function mergeBookMetadata(book, primary, ...fallbacks) {
   const preferredBlackLibrary = availableFallbacks.find((source) => source.blackLibraryLink);
   const forcedCoverSource = availableFallbacks.find((source) => source.preferCover && source.cover);
   const coverCandidates = buildCoverCandidates(primary, availableFallbacks, forcedCoverSource);
-  const categories = primary.categories?.length
-    ? primary.categories
-    : (availableFallbacks.find((source) => source.categories?.length)?.categories || []);
+  const usePrimaryMetadata = primary.metadataStatus === "loaded";
+  const fallbackCategories = availableFallbacks.find((source) => source.categories?.length)?.categories || [];
+  const categories = usePrimaryMetadata
+    ? (primary.categories || [])
+    : (primary.categories?.length ? primary.categories : fallbackCategories);
 
   return {
     ...book,
     ...Object.assign({}, ...availableFallbacks),
     ...primary,
-    description: pickMetadataValue(primary.description, availableFallbacks.map((source) => source.description), fallbackDescription),
-    publishedDate: pickMetadataValue(primary.publishedDate, availableFallbacks.map((source) => source.publishedDate), ""),
+    description: usePrimaryMetadata
+      ? pickMetadataValue(primary.description, [], fallbackDescription)
+      : pickMetadataValue(primary.description, availableFallbacks.map((source) => source.description), fallbackDescription),
+    publishedDate: usePrimaryMetadata
+      ? pickMetadataValue(primary.publishedDate, [], "")
+      : pickMetadataValue(primary.publishedDate, availableFallbacks.map((source) => source.publishedDate), ""),
     categories,
-    pageCount: pickMetadataValue(primary.pageCount, availableFallbacks.map((source) => source.pageCount), ""),
-    publisher: pickMetadataValue(primary.publisher, availableFallbacks.map((source) => source.publisher), ""),
-    infoLink: pickMetadataValue(primary.infoLink, availableFallbacks.map((source) => source.infoLink), ""),
-    previewLink: pickMetadataValue(primary.previewLink, availableFallbacks.map((source) => source.previewLink), ""),
+    pageCount: usePrimaryMetadata
+      ? pickMetadataValue(primary.pageCount, [], "")
+      : pickMetadataValue(primary.pageCount, availableFallbacks.map((source) => source.pageCount), ""),
+    publisher: usePrimaryMetadata
+      ? pickMetadataValue(primary.publisher, [], "")
+      : pickMetadataValue(primary.publisher, availableFallbacks.map((source) => source.publisher), ""),
+    infoLink: usePrimaryMetadata
+      ? pickMetadataValue(primary.infoLink, [], "")
+      : pickMetadataValue(primary.infoLink, availableFallbacks.map((source) => source.infoLink), ""),
+    previewLink: usePrimaryMetadata
+      ? pickMetadataValue(primary.previewLink, [], "")
+      : pickMetadataValue(primary.previewLink, availableFallbacks.map((source) => source.previewLink), ""),
     cover: coverCandidates[0] || "",
     coverCandidates,
     blackLibraryLink: preferredBlackLibrary?.blackLibraryLink || pickMetadataValue(primary.blackLibraryLink, availableFallbacks.map((source) => source.blackLibraryLink), ""),
@@ -733,6 +696,51 @@ function buildCoverCandidates(primary, fallbacks, forcedCoverSource) {
 
 function normalizeCoverCandidates(value) {
   return Array.isArray(value) ? value.filter(Boolean) : [];
+}
+
+function titleMatches(bookTitle, candidateTitle) {
+  const left = normalize(bookTitle);
+  const right = normalize(candidateTitle);
+
+  if (!left || !right) {
+    return false;
+  }
+
+  if (left === right || left.includes(right) || right.includes(left)) {
+    return true;
+  }
+
+  const leftTokens = meaningfulTokens(left);
+  const rightTokens = meaningfulTokens(right);
+  if (!leftTokens.length || !rightTokens.length) {
+    return false;
+  }
+
+  const overlap = leftTokens.filter((token) => rightTokens.includes(token)).length;
+  return overlap >= Math.max(2, Math.min(leftTokens.length, rightTokens.length) - 1);
+}
+
+function authorMatches(bookAuthor, candidateAuthors) {
+  const wantedTokens = meaningfulTokens(normalize(bookAuthor));
+  if (!wantedTokens.length) {
+    return false;
+  }
+
+  return candidateAuthors.some((author) => {
+    const candidateTokens = meaningfulTokens(normalize(author));
+    if (!candidateTokens.length) {
+      return false;
+    }
+
+    const overlap = wantedTokens.filter((token) => candidateTokens.includes(token)).length;
+    return overlap >= 1 && overlap >= Math.min(2, wantedTokens.length);
+  });
+}
+
+function meaningfulTokens(value) {
+  return value
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token && token.length > 1);
 }
 
 function attachCoverCandidates(image, candidates) {
